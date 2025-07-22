@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://i.imgur.com/gKqC7O7.png" alt="Context7 AI Logo" width="300"/>
+<img src="https://raw.githubusercontent.com/nordeim/Context7-MCP-RAG-Agent/refs/heads/main/main_screen.png" alt="Context7 AI Logo" width="800"/>
 
 # 🌌 Context7 AI: The Definitive Terminal Agent
 
