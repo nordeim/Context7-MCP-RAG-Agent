@@ -235,7 +235,7 @@ Running the agent in a Docker container is the recommended method for production
     *   `-e`: Passes your OpenAI API key as an environment variable.
     *   `-v`: Mounts the local `data` directory into the container, so your `history.json` persists even after the container is removed.
 
-### 🏢 Specialized Deployment: POS Machine or Server
+### 🏢 Specialized Deployment: Linux Machine or Server
 
 This guide provides instructions for deploying the agent as a background `systemd` service on a modern Linux system (e.g., Ubuntu 20.04+, Debian 11+, CentOS 8+).
 
