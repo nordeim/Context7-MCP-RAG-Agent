@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/nordeim/Context7-MCP-RAG-Agent/refs/heads/main/main_screen.png" alt="Context7 AI Logo" width="800"/>
-
 # 🌌 Context7 AI: The Definitive Terminal Agent
 
 > **A production-grade, terminal-native AI companion for developers, engineered for accuracy with Pydantic-AI and a robust Retrieval-Augmented Generation pipeline.**
@@ -23,7 +21,7 @@ This project is not just a demo; it's a complete architectural blueprint for bui
 
 Here is the Context7 AI agent in action, running the "Cyberpunk" theme and providing a detailed, markdown-formatted answer based on retrieved documentation.
 
-![Context7 AI in Action](https://i.imgur.com/gKqC7O7.png)
+<img src="https://raw.githubusercontent.com/nordeim/Context7-MCP-RAG-Agent/refs/heads/main/main_screen.png" alt="Context7 AI Logo" width="800"/>
 
 ---
 
