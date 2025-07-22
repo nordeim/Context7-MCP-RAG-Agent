@@ -325,8 +325,8 @@ This guide provides instructions for deploying the agent as a background `system
 While the current application uses a JSON file for history, a production system might evolve to use a relational database. Here’s how to set up a PostgreSQL server using Docker.
 
 ```bash
-# Pull the latest PostgreSQL 15 image
-docker pull postgres:15
+# Pull the latest PostgreSQL 16 image
+docker pull postgres:16
 
 # Run the container
 docker run -d \
@@ -337,7 +337,7 @@ docker run -d \
   -e POSTGRES_DB=context7_db \
   -v postgres_data_volume:/var/lib/postgresql/data \
   -p 5432:5432 \
-  postgres:15
+  postgres:16
 ```
 *   This command starts a PostgreSQL server in the background.
 *   The data will be persisted in a Docker volume named `postgres_data_volume`.
