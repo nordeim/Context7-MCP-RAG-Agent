@@ -1,0 +1,98 @@
+"""
+Conversation history management with JSON persistence.
+This version is fully compliant with the standard OpenAI message schema.
+"""
+
+import json
+import asyncio
+from typing import Dict, List, Any, Optional
+from datetime import datetime
+from pathlib import Path
+import aiofiles
+
+from .config import config
+
+class HistoryManager:
+    """
+    Manages conversation history with a standard, compliant message schema.
+    """
+    
+    def __init__(self):
+        self.history_path = config.history_path
+        self.max_history = config.max_history
+        self._history: Dict[str, List[Dict[str, Any]]] = {}
+    
+    async def load(self):
+        """Load conversation history from disk."""
+        try:
+            if self.history_path.exists():
+                async with aiofiles.open(self.history_path, 'r') as f:
+                    content = await f.read()
+                    if content:
+                        self._history = json.loads(content)
+        except Exception as e:
+            print(f"Warning: Could not load or parse history file: {e}. Starting with fresh history.")
+            self._history = {}
+    
+    async def save(self):
+        """Save conversation history to disk."""
+        try:
+            # Ensure the directory exists before saving
+            self.history_path.parent.mkdir(parents=True, exist_ok=True)
+            async with aiofiles.open(self.history_path, 'w') as f:
+                await f.write(json.dumps(self._history, indent=2))
+        except Exception as e:
+            print(f"Warning: Could not save history: {e}")
+    
+    async def add_message(
+        self, 
+        conversation_id: str, 
+        role: str,
+        content: str
+    ):
+        """Adds a single message object to the history in the standard format."""
+        if conversation_id not in self._history:
+            self._history[conversation_id] = []
+        
+        self._history[conversation_id].append({
+            "role": role,
+            "content": content,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        if len(self._history[conversation_id]) > self.max_history:
+            self._history[conversation_id] = self._history[conversation_id][-self.max_history:]
+        
+        await self.save()
+    
+    def get_messages(self, conversation_id: str) -> List[Dict[str, Any]]:
+        """Get all messages for a conversation, correctly formatted for the agent."""
+        messages = self._history.get(conversation_id, [])
+        return [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+
+    def get_conversations(self) -> List[Dict[str, Any]]:
+        """Get all conversation IDs with metadata."""
+        conversations = []
+        for conv_id, messages in self._history.items():
+            if messages:
+                last_message_content = messages[-1].get("content", "")
+                conversations.append({
+                    "id": conv_id,
+                    "last_message": last_message_content,
+                    "message_count": len(messages)
+                })
+        
+        return sorted(
+            conversations, 
+            key=lambda x: self._history.get(x["id"], [{}])[-1].get("timestamp", ""),
+            reverse=True
+        )
+    
+    async def clear(self, conversation_id: Optional[str] = None):
+        """Clear history for a conversation or all conversations."""
+        if conversation_id:
+            self._history.pop(conversation_id, None)
+        else:
+            self._history.clear()
+        
+        await self.save()

@@ -1,0 +1,169 @@
+# =============================================================================
+# CONTEXT7 TERMINAL AI - GITIGNORE
+# Comprehensive ignore rules for security and cleanliness
+# =============================================================================
+
+# 🔐 SECURITY - NEVER COMMIT THESE
+.env
+.env.local
+.env.*.local
+.envrc
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+.secrets/
+config/secrets/
+credentials.json
+service-account.json
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+# 🐍 PYTHON ENVIRONMENT
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+env.bak/
+venv.bak/
+
+# Python cache
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 📦 PACKAGE MANAGEMENT
+poetry.lock
+Pipfile.lock
+poetry.toml
+requirements-dev.txt
+requirements-test.txt
+
+# 🐳 DOCKER
+.dockerignore
+docker-compose.override.yml
+docker-compose.prod.yml
+.env.docker
+.env.production
+
+# 🗄️ DATA & LOGS
+data/
+logs/
+*.log
+*.sqlite
+*.db
+*.sqlite3
+*.db-journal
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+.tmp/
+.temp/
+cache/
+.cache/
+session/
+sessions/
+
+# 🔧 DEVELOPMENT
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# 📊 TESTING & COVERAGE
+.coverage
+htmlcov/
+.tox/
+.coverage.*
+.nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 📱 OS SPECIFIC
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# 🏗️ BUILD ARTIFACTS
+build/
+dist/
+*.egg
+*.egg-info/
+.wheels/
+.eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# 🔬 JUPYTER NOTEBOOKS
+.ipynb_checkpoints
+*.ipynb
+
+# 🎯 LOCAL CONFIGURATION
+local_config.py
+local_settings.py
+config.local.yaml
+config.local.json
+custom_themes/
+.dev/

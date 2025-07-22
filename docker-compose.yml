@@ -1,0 +1,195 @@
+# =============================================================================
+# CONTEXT7 TERMINAL AI - DOCKER COMPOSE CONFIGURATION
+# Complete development and production stack
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # Main Application
+  context7-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - POETRY_VERSION=1.7.1
+    container_name: context7-terminal-ai
+    restart: unless-stopped
+    
+    environment:
+      # Core Configuration
+      - CONTEXT7_OPENAI_API_KEY=${CONTEXT7_OPENAI_API_KEY}
+      - CONTEXT7_OPENAI_BASE_URL=${CONTEXT7_OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - CONTEXT7_OPENAI_MODEL=${CONTEXT7_OPENAI_MODEL:-gpt-4o-mini}
+      
+      # Storage Configuration
+      - CONTEXT7_HISTORY_PATH=/app/data/history.json
+      - CONTEXT7_MCP_CONFIG_PATH=/app/data/mcp.json
+      - CONTEXT7_MAX_HISTORY=${CONTEXT7_MAX_HISTORY:-1000}
+      
+      # Logging Configuration
+      - CONTEXT7_LOG_LEVEL=${CONTEXT7_LOG_LEVEL:-INFO}
+      - CONTEXT7_LOG_FILE=/app/logs/context7.log
+      
+      # Network Configuration
+      - CONTEXT7_REQUEST_TIMEOUT=${CONTEXT7_REQUEST_TIMEOUT:-30}
+      - CONTEXT7_MAX_RETRIES=${CONTEXT7_MAX_RETRIES:-3}
+      
+      # Theme Configuration
+      - CONTEXT7_DEFAULT_THEME=${CONTEXT7_DEFAULT_THEME:-cyberpunk}
+      - CONTEXT7_ENABLE_ANIMATIONS=${CONTEXT7_ENABLE_ANIMATIONS:-true}
+    
+    volumes:
+      # Persistent data
+      - context7_data:/app/data
+      - context7_logs:/app/logs
+      
+      # Development volume (comment out for production)
+      - ./src:/app/src:ro
+    
+    ports:
+      - "${CONTEXT7_PORT:-8080}:8080"
+    
+    depends_on:
+      - context7-mcp
+      - redis
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.path.insert(0, '/app'); from src.agent import Context7Agent; import asyncio; asyncio.run(Context7Agent().initialize())"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - context7-network
+
+  # Context7 MCP Server
+  context7-mcp:
+    image: node:18-alpine
+    container_name: context7-mcp-server
+    restart: unless-stopped
+    
+    command: npx -y @upstash/context7-mcp@latest
+    
+    environment:
+      - NODE_ENV=production
+      - MCP_PORT=3000
+    
+    ports:
+      - "3000:3000"
+    
+    volumes:
+      - mcp_cache:/root/.npm
+    
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    networks:
+      - context7-network
+
+  # Redis for Caching
+  redis:
+    image: redis:7-alpine
+    container_name: context7-redis
+    restart: unless-stopped
+    
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    
+    ports:
+      - "6379:6379"
+    
+    volumes:
+      - redis_data:/data
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    networks:
+      - context7-network
+
+  # Development Tools (Optional)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: context7-watchtower
+    restart: unless-stopped
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_CLEANUP=true
+    
+    command: --interval 300 context7-terminal-ai context7-mcp-server
+
+  # Monitoring (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: context7-prometheus
+    restart: unless-stopped
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    
+    networks:
+      - context7-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: context7-grafana
+    restart: unless-stopped
+    
+    ports:
+      - "3001:3000"
+    
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    
+    networks:
+      - context7-network
+
+# Named Volumes
+volumes:
+  context7_data:
+    driver: local
+  context7_logs:
+    driver: local
+  redis_data:
+    driver: local
+  mcp_cache:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# Networks
+networks:
+  context7-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
